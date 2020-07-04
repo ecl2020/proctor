@@ -1,17 +1,53 @@
 function plot() {
-    var svg1 = d3.select("#svg1");
-    svg1.append("circle")
-        .attr("cx", 100)
-        .attr("cy", 100)
-        .attr("r", 90)
-        .attr("fill", "red");
-    console.log(getData());
-}
+    // Create a new svg canvas
+    let svg1 = d3.select("#svg1");
 
-function getData() {
-    d3.tsv("https://raw.githubusercontent.com/ecl2020/Proctor/master/example-data.txt?token=AIIDCJBQCE27XTZLZCV46LC7BITQK",
-        function (data) {
-            // console.log(data)
-            return (data[0],data[1])
+    // Get the data
+    d3.tsv("https://raw.githubusercontent.com/ecl2020/Proctor/master/example-data.txt?token=AIIDCJBQCE27XTZLZCV46LC7BITQK")
+        .then(function (data) {
+            // Coerce the data to numbers.
+            data.forEach(function (d) {
+                d.mass = +d.mass;
+                d.moisture = +d.moisture;
+            });
+
+            let x = d3.scaleLinear()
+                .range([10, 180]);
+
+            let y = d3.scaleLinear()
+                .range([180, 10]);
+
+            // Compute the scales’ domains.
+            x.domain(d3.extent(data, function (d) { return d.moisture; })).nice();
+            y.domain(d3.extent(data, function (d) { return d.mass; })).nice();
+
+            // Add the x Axis
+            svg1.append("g")
+                .attr("transform", "translate(0," + 200 + ")")
+                .call(d3.axisBottom(x));
+
+            // Add the y Axis
+            svg1.append("g")
+                .call(d3.axisLeft(y));
+
+            // Add the points!
+            svg1.selectAll(".point")
+                .data(data)
+                .enter().append("circle")
+                .attr("class", "point")
+                .attr("r", 4.5)
+                .attr("cx", function (d) { return x(d.moisture); })
+                .attr("cy", function (d) { return y(d.mass); });
+
+            let line = d3.line()
+                .x(function (d) { return x(d.moisture); })
+                .y(function (d) { return y(d.mass); })
+                .curve(d3.curveNatural);
+
+            svg1.append("path")
+                .datum(data) // 10. Binds data to the line 
+                .attr("d", line) // 11. Calls the line generator 
+                .style("stroke", "black")
+                .style("fill", "none")
         })
 }
