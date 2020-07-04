@@ -5,11 +5,13 @@ function plot() {
         .attr("cy", 100)
         .attr("r", 90)
         .attr("fill", "red");
-    getData();
+    console.log(getData());
 }
 
 function getData() {
-    d3.tsv("C:\\Users\\Eric\\Documents\\personal-projects\\Proctor\\example-data.txt", function (data) {
-        console.log(data)
-    })
+    d3.tsv("https://raw.githubusercontent.com/ecl2020/Proctor/master/example-data.txt?token=AIIDCJBQCE27XTZLZCV46LC7BITQK",
+        function (data) {
+            // console.log(data)
+            return (data[0],data[1])
+        })
 }
