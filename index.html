@@ -11,6 +11,11 @@
 
 <body>
     <svg width="200" height="200" id="svg1"></svg>
+
+    <script>document.addEventListener('keyup', (event) => {
+            writeIn()
+        });</script>
+
     <form action="/action_page.php">
         <label for="quantity">1 mass:</label>
         <input type="number" id="mass-1" name="mass-1" , class="input mass" , value="0">
@@ -51,7 +56,7 @@
         <label for="quantity">5 moisture:</label>
         <input type="number" id="moisture-5" name="moisture-5" , class="input moisture" , value="0">
     </form>
-    <button type="button" onclick="writeIn()">Try it</button>
+    <!-- <button type="button" onclick="writeIn()">Try it</button> -->
     <!-- <script>writeIn()</script> -->
 </body>
 
