@@ -1,0 +1,2 @@
+// SORT DATA BY MOISTURE CONTENT
+    data.sort((a, b) => (a.moisture > b.moisture) ? 1 : -1);

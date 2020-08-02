@@ -1,0 +1,12 @@
+.plot {
+    background-color: #EBECF0;
+    width: 300px;
+    height: 300px;
+    margin-left: 10px;
+    margin-bottom: 50px;
+}
+
+.line {
+    stroke: black;
+    fill: none;
+}
