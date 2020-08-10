@@ -12,60 +12,56 @@
     <script src="https://unpkg.com/d3-interpolate-path/build/d3-interpolate-path.min.js"></script>
     <!-- code for making and animating the plot -->
     <script src="./plotting.js"></script>
+    <script src="./savedpoints.js"></script>
     <link rel="stylesheet" href="./style.css">
     </link>
 </head>
 
 <body>
     <!-- place for the plot to go -->
-    <div class="plot" id="plot"></div>
+    <div class='plot' id='plot'></div>
 
+    <form action='/action_page.php'>
+        <label for='quantity'>Mass</label>
+        <input type='number' id='mass' name='input' class='input mass' value=''>
+    </form>
+    <form action='/action_page.php'>
+        <label for='quantity'>Moisture:</label>
+        <input type='number' id='moisture' name='input' class='input moisture' value=''>
+    </form>
+    <button onclick="
+        let newmass = +document.getElementById(`mass`).value;
+        let newmoisture = +document.getElementById(`moisture`).value;
+        let pointId = document.getElementById('points-table').rows.length;
+        updateTable([pointId, newmass, newmoisture], 'points-table');
+        updatePlot();
+        document.getElementById('mass').value = '';
+        document.getElementById('moisture').value = ''" ;>
+        New Point
+    </button>
+    <button class='picktype' onclick="setC('C');">
+        C Proctor
+    </button>
+    <button class='picktype' onclick="setC('B');">
+        B Proctor
+    </button>
+    <button class='picktype' onclick="setC('A');">
+        A Proctor
+    </button>
+    <table class='points-table' , id='points-table'>
+        <tr>
+            <td class='points-header'>Point ID</td>
+            <td class='points-header'>Mass</td>
+            <td class='points-header'>Moisture</td>
+        </tr>
+    </table>
+    <p id='proctor-type'>Choose a Proctor Type</p>
     <script>
-        document.addEventListener('keyup', (event) => {
+        document.getElementById('points-table').addEventListener('keyup', (event) => {
             updatePlot();
         });
     </script>
 
-    <form action="/action_page.php">
-        <label for="quantity">1 mass:</label>
-        <input type="number" id="mass-1" name="mass-1" , class="input mass" , value="0">
-    </form>
-    <form action="/action_page.php">
-        <label for="quantity">1 moisture:</label>
-        <input type="number" id="moisture-1" name="moisture-1" , class="input moisture" , value="0">
-    </form>
-    <form action="/action_page.php">
-        <label for="quantity">2 mass:</label>
-        <input type="number" id="mass-2" name="mass-2" , class="input mass" , value="0">
-    </form>
-    <form action="/action_page.php">
-        <label for="quantity">2 moisture:</label>
-        <input type="number" id="moisture-2" name="moisture-2" , class="input moisture" , value="0">
-    </form>
-    <form action="/action_page.php">
-        <label for="quantity">3 mass:</label>
-        <input type="number" id="mass-3" name="mass-3" , class="input mass" , value="0">
-    </form>
-    <form action="/action_page.php">
-        <label for="quantity">3 moisture:</label>
-        <input type="number" id="moisture-3" name="moisture-3" , class="input moisture" , value="0">
-    </form>
-    <form action="/action_page.php">
-        <label for="quantity">4 mass:</label>
-        <input type="number" id="mass-4" name="mass-4" , class="input mass" , value="0">
-    </form>
-    <form action="/action_page.php">
-        <label for="quantity">4 moisture:</label>
-        <input type="number" id="moisture-4" name="moisture-4" , class="input moisture" , value="0">
-    </form>
-    <form action="/action_page.php">
-        <label for="quantity">5 mass:</label>
-        <input type="number" id="mass-5" name="mass-5" , class="input mass" , value="0">
-    </form>
-    <form action="/action_page.php">
-        <label for="quantity">5 moisture:</label>
-        <input type="number" id="moisture-5" name="moisture-5" , class="input moisture" , value="0">
-    </form>
 </body>
 
 </html>

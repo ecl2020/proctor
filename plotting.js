@@ -1,4 +1,6 @@
 const here = 'here'
+const alldata = []
+var C = 'B'
 
 
 // returns the maximum possible density at a given moisture content (moisture)
@@ -8,22 +10,40 @@ function getZavl(moisture) {
     return 62.4 * specGrav / (moisture / 100 + 1);
 }
 
+function setC(c) {
+    C = c
+    document.getElementById("proctor-type").innerHTML = c
+}
+
 // returns the dry density of a given wet mass (mass) at a given moisture (moisture)
 function getDensity(mass, moisture) {
-    // mass - weight of mold [CUSTOM]
-    wetmass = mass - 4282;
-    // changes moisture from % to decimal
-    moisture = 1 + moisture / 100;
-    drymass = wetmass / moisture;
-    // drymass / volume of mold [CUSTOM]
-    drydensity = drymass / 943;
-    return drydensity * 62.4;
+    if (C == 'C') {
+        // mass - weight of mold [CUSTOM]
+        wetmass = mass - 5482;
+        // changes moisture from % to decimal
+        moisture = 1 + moisture / 100;
+        drymass = wetmass / moisture;
+        // drymass / volume of mold [CUSTOM]
+        drydensity = drymass / 2119;
+        return drydensity * 62.4;
+    }
+    else {
+        // mass - weight of mold [CUSTOM]
+        wetmass = mass - 4282;
+        // changes moisture from % to decimal
+        moisture = 1 + moisture / 100;
+        drymass = wetmass / moisture;
+        // drymass / volume of mold [CUSTOM]
+        drydensity = drymass / 943;
+        return drydensity * 62.4;
+    }
 }
 
 let built = false
 function updatePlot() {
     // gets the data as an array
     let data = getData();
+    console.log(data)
     // checks if an svg already exists
     var svg = d3.select('svg > g');
     if (svg.empty()) {
@@ -100,34 +120,24 @@ function updatePlot() {
         .attr('cx', function (d) { return x(d.moisture); })
         .attr('cy', function (d) { return y(d.density); });
 
+    u.exit();
+
     // define moisture-density curve
     let line = d3.line()
         .x(function (d) { return x(d.moisture); })
         .y(function (d) { return y(d.density); })
         .curve(d3.curveNatural);
+    console.log(x(data[0].moisture))
 
     // define zero air void curve
     let zavLine = d3.line()
         .x(function (d) { return x(d.moisture); })
         .y(function (d) { return y(getZavl(d.moisture)) })
-        .curve(d3.curveLinear);
+        .curve(d3.curveNatural);
 
     // update each of the lines on the plot with their curve and class
     updateLine(line, 'line', 'curve');
     updateLine(zavLine, 'zavl', 'zcurve');
-    // let omc = svg.selectAll('circle').filter('omc')
-    //     .data(getOptimum(document.getElementById('curve')));
-    // console.log(x(getOptimum(document.getElementById('curve')).moisture))
-    // console.log(y(getOptimum(document.getElementById('curve')).density))
-    // omc.enter()
-    //     .append('circle')
-    //     .attr('class', 'omc')
-    //     .merge(u)
-    //     .transition()
-    //     .duration(1000)
-    //     .attr('r', 6.5)
-    //     .attr('cx', getOptimum(document.getElementById('curve')).moisture)
-    //     .attr('cy', getOptimum(document.getElementById('curve')).density);
 }
 
 function updateLine(line, lineClass, lineId) {
@@ -142,10 +152,10 @@ function updateLine(line, lineClass, lineId) {
     }
 
     // select the line with that class
-    let w = svg.selectAll(`path.${lineClass}`);
+    let updateLine = svg.selectAll(`path.${lineClass}`);
 
     // transition the line/animate the line with new data
-    w
+    updateLine
         .transition()
         .duration(1000)
         .attrTween('d', function () {
@@ -156,21 +166,21 @@ function updateLine(line, lineClass, lineId) {
 }
 
 function getData() {
-    let localdata = [];
-    for (let step = 0; step < 5; step++) {
-        let newmass = +document.getElementById(`mass-${step + 1}`).value;
-        let newmoisture = +document.getElementById(`moisture-${step + 1}`).value;
-        if (newmass != 0) {
-            localdata.push({
-                mass: newmass,
-                moisture: newmoisture,
-                density: getDensity(newmass, newmoisture)
-            })
-        }
+    let data = []
+    let table = document.getElementById('points-table')
+    for (let x = 1; x < table.rows.length; x++) {
+        let newmass = +table.rows[x].cells[1].innerText;
+        let newmoisture = +table.rows[x].cells[2].innerText;
+        let density = getDensity(newmass, newmoisture)
+        data.push({
+            mass: newmass,
+            moisture: newmoisture,
+            density: density
+        });
     }
     // SORT DATA BY MOISTURE CONTENT
-    localdata.sort((a, b) => (a.moisture > b.moisture) ? 1 : -1);
-    return localdata;
+    data.sort((a, b) => (a.moisture > b.moisture) ? 1 : -1);
+    return data;
 }
 
 function getOptimum(path) {
@@ -182,14 +192,14 @@ function getOptimum(path) {
     let mid = 0;
     let start = 0;
     let end = path.getTotalLength();
-    while (n < maxIterations && end-start>error) {
+    while (n < maxIterations && end - start > error) {
         let mid = (start + end) / 2
-        if (path.getPointAtLength(mid + error).y < path.getPointAtLength(mid).y &&
-            path.getPointAtLength(mid - error).y < path.getPointAtLength(mid).y) {
+        if (path.getPointAtLength(mid + error).y > path.getPointAtLength(mid).y &&
+            path.getPointAtLength(mid - error).y > path.getPointAtLength(mid).y) {
             x = path.getPointAtLength(mid).x;
             y = path.getPointAtLength(mid).y;
         }
-        else if (path.getPointAtLength(mid - error).y > path.getPointAtLength(mid).y) {
+        else if (path.getPointAtLength(mid - error).y < path.getPointAtLength(mid).y) {
             end = mid;
         }
         else {

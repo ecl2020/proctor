@@ -10,3 +10,11 @@
     stroke: black;
     fill: none;
 }
+
+.zavl {
+    stroke-dasharray: 3;
+}
+
+table {
+    background-color: #EBECF0;
+}
