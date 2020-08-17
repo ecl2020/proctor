@@ -16,8 +16,8 @@
 </head>
 
 <body>
-    <script src="./plotting.js"></script>
-    <script src="./savedpoints.js"></script>
+    <script src=".scripts/plotting.js"></script>
+    <script src=".scripts/savedpoints.js"></script>
     <!-- place for the plot to go -->
     <div class='plot' id='plot'></div>
 
@@ -30,10 +30,9 @@
         <input type='number' id='moisture' name='input' class='input moisture' value=''>
     </form>
     <button onclick="
-        let newmass = +document.getElementById(`mass`).value;
-        let newmoisture = +document.getElementById(`moisture`).value;
-        let pointId = document.getElementById('points-table').rows.length;
-        updateTable([pointId, newmass, newmoisture], 'points-table');
+        let newmass = +document.getElementById('mass').value;
+        let newmoisture = +document.getElementById('moisture').value;
+        updateTable([newmass, newmoisture], 'points-table');
         updatePlot();
         document.getElementById('mass').value = '';
         document.getElementById('moisture').value = ''" ;>
@@ -50,9 +49,9 @@
     </button>
     <table class='points-table' , id='points-table'>
         <tr>
-            <td class='points-header'>Point ID</td>
             <td class='points-header'>Mass</td>
             <td class='points-header'>Moisture</td>
+            <td></td>
         </tr>
     </table>
     <p id='proctor-type'>Choose a Proctor Type</p>

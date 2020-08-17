@@ -2,17 +2,16 @@ const here = 'here'
 const alldata = []
 var C = 'B'
 
+function setC(c) {
+    C = c
+    document.getElementById("proctor-type").innerHTML = c
+}
 
 // returns the maximum possible density at a given moisture content (moisture)
 function getZavl(moisture) {
     // specific gravity [CUSTOM]
     let specGrav = 2.70;
     return 62.4 * specGrav / (moisture / 100 + 1);
-}
-
-function setC(c) {
-    C = c
-    document.getElementById("proctor-type").innerHTML = c
 }
 
 // returns the dry density of a given wet mass (mass) at a given moisture (moisture)
@@ -42,102 +41,106 @@ function getDensity(mass, moisture) {
 let built = false
 function updatePlot() {
     // gets the data as an array
-    let data = getData();
-    console.log(data)
-    // checks if an svg already exists
-    var svg = d3.select('svg > g');
-    if (svg.empty()) {
-        // if an svg does not exist, a new one is appended to the plot div
-        var svg = d3.select(plot).append('svg')
-            .attr('class', 'plot')
-            .attr('id', 'proctor svg')
-            .attr('width', 500)
-            .attr('height', 500);
-    }
-    // define x scale
-    let x = d3.scaleLinear()
-        // domain allows some space around the actual density/moisture line
-        .domain([d3.min(data, d => d.moisture) - 3, d3.max(data, d => d.moisture) + 5])
-        .range([40, 280]);
-    // add x-axis
-    let x_axis = d3.axisBottom()
-        .scale(x);
+    if (getData() && getData().length) {
+        let data = getData();
+        // checks if an svg already exists
+        var svg = d3.select('svg > g');
+        if (svg.empty()) {
+            // if an svg does not exist, a new one is appended to the plot div
+            var svg = d3.select(plot).append('svg')
+                .attr('class', 'plot')
+                .attr('id', 'proctor svg')
+                .attr('width', 500)
+                .attr('height', 500);
+        }
+        // define x scale
+        let x = d3.scaleLinear()
+            // domain allows some space around the actual density/moisture line
+            .domain([d3.min(data, d => d.moisture) - 3, d3.max(data, d => d.moisture) + 5])
+            .range([40, 280]);
+        // add x-axis
+        let x_axis = d3.axisBottom()
+            .scale(x);
 
-    // define y scale
-    let y = d3.scaleLinear()
-        .domain([d3.min(data, d => d.density) - 5
-            , d3.max(data, d => d.density) + 3])
-        .range([260, 20]);
-    // Add the y Axis
-    let y_axis = d3.axisLeft()
-        .scale(y);
+        // define y scale
+        let y = d3.scaleLinear()
+            .domain([d3.min(data, d => d.density) - 5
+                , d3.max(data, d => d.density) + 3])
+            .range([260, 20]);
+        // Add the y Axis
+        let y_axis = d3.axisLeft()
+            .scale(y);
 
-    // if the axes have already been constructed 
-    if (built) {
-        d3.selectAll($('[class=xaxis]')) // change the x axis
+        // if the axes have already been constructed 
+        if (built) {
+            d3.selectAll($('[class=xaxis]')) // change the x axis
+                .transition()
+                .duration(1000)
+                .call(x_axis);
+            d3.selectAll($('[class=yaxis]')) // change the y axis
+                .transition()
+                .duration(1000)
+                .call(y_axis);
+        }
+        else {
+            // build axes
+            svg.append('g')
+                .transition()
+                .duration(10)
+                .attr('class', 'xaxis')
+                // move to the bottom of the plot
+                .attr('transform', 'translate(0,260)')
+                .call(x_axis);
+            svg.append('g')
+                .transition()
+                .duration(10)
+                .attr('class', 'yaxis')
+                // move slightly inside the left edge of the plot
+                .attr('transform', 'translate(40,0)')
+                .call(y_axis);
+            // confirm axes have been added to the plot
+            built = !built
+        }
+
+        // select the svg canvas
+        svg = d3.select('svg');
+        // select some circles and join to the data
+        let u = svg.selectAll('circle').filter('.all')
+            .data(data);
+
+        // add circles to the plot
+        u.enter()
+            .append('circle')
+            .attr('class', 'all')
+            .merge(u)
             .transition()
             .duration(1000)
-            .call(x_axis);
-        d3.selectAll($('[class=yaxis]')) // change the y axis
-            .transition()
-            .duration(1000)
-            .call(y_axis);
+            .attr('r', 4.5)
+            .attr('cx', function (d) { return x(d.moisture); })
+            .attr('cy', function (d) { return y(d.density); });
+
+        u.exit().remove();
+
+        // define moisture-density curve
+        let line = d3.line()
+            .x(function (d) { return x(d.moisture); })
+            .y(function (d) { return y(d.density); })
+            .curve(d3.curveNatural);
+
+        // define zero air void curve
+        let zavLine = d3.line()
+            .x(function (d) { return x(d.moisture); })
+            .y(function (d) { return y(getZavl(d.moisture)) })
+            .curve(d3.curveNatural);
+
+        // update each of the lines on the plot with their curve and class
+        updateLine(line, 'line', 'curve');
+        updateLine(zavLine, 'zavl', 'zcurve');
+        // console.log(getOptimum(line));
     }
     else {
-        // build axes
-        svg.append('g')
-            .transition()
-            .duration(10)
-            .attr('class', 'xaxis')
-            // move to the bottom of the plot
-            .attr('transform', 'translate(0,260)')
-            .call(x_axis);
-        svg.append('g')
-            .transition()
-            .duration(10)
-            .attr('class', 'yaxis')
-            // move slightly inside the left edge of the plot
-            .attr('transform', 'translate(40,0)')
-            .call(y_axis);
-        // confirm axes have been added to the plot
-        built = !built
+        d3.selectAll('circle').remove();
     }
-
-    // select the svg canvas
-    svg = d3.select('svg');
-    // select some circles and join to the data
-    let u = svg.selectAll('circle').filter('.all')
-        .data(data);
-
-    // add circles to the plot
-    u.enter()
-        .append('circle')
-        .attr('class', 'all')
-        .merge(u)
-        .transition()
-        .duration(1000)
-        .attr('r', 4.5)
-        .attr('cx', function (d) { return x(d.moisture); })
-        .attr('cy', function (d) { return y(d.density); });
-
-    u.exit();
-
-    // define moisture-density curve
-    let line = d3.line()
-        .x(function (d) { return x(d.moisture); })
-        .y(function (d) { return y(d.density); })
-        .curve(d3.curveNatural);
-    console.log(x(data[0].moisture))
-
-    // define zero air void curve
-    let zavLine = d3.line()
-        .x(function (d) { return x(d.moisture); })
-        .y(function (d) { return y(getZavl(d.moisture)) })
-        .curve(d3.curveNatural);
-
-    // update each of the lines on the plot with their curve and class
-    updateLine(line, 'line', 'curve');
-    updateLine(zavLine, 'zavl', 'zcurve');
 }
 
 function updateLine(line, lineClass, lineId) {
@@ -169,8 +172,8 @@ function getData() {
     let data = []
     let table = document.getElementById('points-table')
     for (let x = 1; x < table.rows.length; x++) {
-        let newmass = +table.rows[x].cells[1].innerText;
-        let newmoisture = +table.rows[x].cells[2].innerText;
+        let newmass = +table.rows[x].cells[0].innerText;
+        let newmoisture = +table.rows[x].cells[1].innerText;
         let density = getDensity(newmass, newmoisture)
         data.push({
             mass: newmass,
@@ -205,6 +208,7 @@ function getOptimum(path) {
         else {
             start = mid;
         }
+        console.log(mid)
         n++;
     }
     if (x, y == 0) {

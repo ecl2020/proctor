@@ -1,11 +1,19 @@
 function newRow(tbdy, content, cellclass, rowclass) {
-    var row = tbdy.insertRow(-1)
+    let row = tbdy.insertRow(-1)
     row.className = rowclass
     row.id = rowclass
     for (i = 0; i < content.length; i++) {
-        var cell = row.insertCell(i)
+        let cell = row.insertCell(i)
         createCell(cell, content[i], cellclass)
     }
+    let button = document.createElement('button');
+    button.innerHTML = 'Delete Point';
+    button.addEventListener ("click", function() {
+        document.getElementById(rowclass).remove();
+        updatePlot();
+      });
+    let cell = row.insertCell(content.length);
+    cell.appendChild(button);
     // row.addEventListener('mouseenter', function{})
     // document.getElementById('table').rows[-1].cells.length;
     // document.getElementById('activities').className='selectedItem';
@@ -25,8 +33,8 @@ function createCell(cell, content, newclass) {
 function updateTable(content, id) {
     let tbdy = document.getElementById(id).tBodies[0]
     newRow(tbdy, content, 'added-point cell', 'added-point row')
-    // Sort by the contents of row 2 (moisture)
-    sortBy(2, id)
+    // Sort by the contents of row 1 (moisture)
+    sortBy(1, id)
 }
 
 // returns table with id "id" sorted by column number "column"
